@@ -16,8 +16,3 @@ def test_mpe_simple_tag_mpi():
     high_score_test('mpi mpe simple tag',
         'mpe_simple_tag.py', 10, passing_scores)
 
-
-if __name__ == "__main__":
-
-    test_mpe_simple_tag_mpi()
-
