@@ -38,7 +38,6 @@ class MountainCarContinuousRunner(GymRunner):
             "actor_kw_args"      : actor_kw_args,
             "critic_kw_args"     : critic_kw_args,
             "lr"                 : lr,
-            "bootstrap_clip"   : (-0.001, 0.0),
             "enable_icm"         : True,
             "icm_kw_args"        : icm_kw_args,
         }
