@@ -224,7 +224,7 @@ ppoaf --help
 To test a model that has been trained on a particular environment,
 you can issue the following command:
 ```
-ppoaf <path_to_runner_file> --num-test-runs <num_test_runs> --render
+ppoaf --test <path_to_runner_file> --num-test-runs <num_test_runs> --render
 ```
 You can optionally omit the `--render` or add the `--render-gif` flag.
 
@@ -232,7 +232,7 @@ By default, exploration is disabled during testing, but you can enable it
 with the `--test-explore` flag. Example:
 
 ```
-ppoaf <path_to_runner_file> --num-test-runs <num_test_runs> --render --test-explore
+ppoaf --test <path_to_runner_file> --num-test-runs <num_test_runs> --render --test-explore
 ```
 
 Note that enabling exploration during testing will have varied results. I've found
