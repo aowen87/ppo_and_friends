@@ -16,8 +16,7 @@ class EpisodeInfo(object):
                  starting_ts    = 0,
                  use_gae        = False,
                  gamma          = 0.99,
-                 lambd          = 0.95,
-                 bootstrap_clip = (-10., 10.)):
+                 lambd          = 0.95):
         """
             A container for storing episode information.
 
@@ -29,7 +28,6 @@ class EpisodeInfo(object):
                                discounted sums. This is used for advantages and
                                "rewards-to-go" (expected discounted returns).
                 labmd          A "smoothing" factor used in GAE.
-                bootstrap_clip A value to clip our bootstrapped rewards to.
         """
 
         self.starting_ts              = starting_ts
@@ -37,7 +35,6 @@ class EpisodeInfo(object):
         self.use_gae                  = use_gae
         self.gamma                    = gamma
         self.lambd                    = lambd
-        self.bootstrap_clip           = bootstrap_clip
         self.critic_observations      = []
         self.observations             = []
         self.next_observations        = []
@@ -251,17 +248,6 @@ class EpisodeInfo(object):
         self.length       = self.ending_ts - self.starting_ts
         self.is_finished  = True
         self.ending_value = ending_value
-
-        #
-        # Clipping the ending value can have dramaticly positive
-        # effects on training. MountainCarContinuous is a great
-        # example of an environment that I've seen struggle quite
-        # a bit without a propper bs clip.
-        #
-        ending_reward = np.clip(
-            ending_reward,
-            self.bootstrap_clip[0],
-            self.bootstrap_clip[1])
 
         padded_rewards = np.array(self.rewards + [ending_reward],
             dtype=np.float32)
