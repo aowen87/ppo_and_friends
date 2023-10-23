@@ -89,7 +89,7 @@ def test_binary_lunar_lander_mpi():
 # MountainCar tests
 #
 def test_mountain_car_mpi():
-    num_timesteps = 300000
+    num_timesteps  = 1_000_000
     passing_scores = {"agent0" :-199.}
 
     run_training(
@@ -102,7 +102,7 @@ def test_mountain_car_mpi():
         'mountain_car.py', 10, passing_scores)
 
 def test_mountain_car_continous_mpi():
-    num_timesteps = 300000
+    num_timesteps  = 1_000_000
     passing_scores = {"agent0" :50.}
 
     run_training(
