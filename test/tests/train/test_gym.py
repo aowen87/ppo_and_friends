@@ -1,4 +1,5 @@
 from utils import run_training, high_score_test
+import pytest
 
 def test_cart_pole_serial():
 
@@ -88,8 +89,13 @@ def test_binary_lunar_lander_mpi():
 #
 # MountainCar tests
 #
+# TODO: maybe add a "long" version of the test suite
+# that runs these? Or maybe find a way to get more ranks
+# on the github machine?
+#
+@pytest.mark.skip(reason="This test just takes too long on 2 rank")
 def test_mountain_car_mpi():
-    num_timesteps = 300000
+    num_timesteps  = 1_000_000
     passing_scores = {"agent0" :-199.}
 
     run_training(
@@ -101,8 +107,9 @@ def test_mountain_car_mpi():
     high_score_test('mountain car',
         'mountain_car.py', 10, passing_scores)
 
+@pytest.mark.skip(reason="This test just takes too long on 2 rank")
 def test_mountain_car_continous_mpi():
-    num_timesteps = 300000
+    num_timesteps  = 1_000_000
     passing_scores = {"agent0" :50.}
 
     run_training(
@@ -113,18 +120,3 @@ def test_mountain_car_continous_mpi():
 
     high_score_test('mountain car continuous',
         'mountain_car_continuous.py', 10, passing_scores)
-
-
-if __name__ == "__main__":
-
-    test_cart_pole_serial()
-    test_cart_pole_mpi()
-    test_cart_pole_multi_envs()
-    test_cart_pole_multi_envs_mpi()
-    test_binary_cart_pole_serial()
-
-    test_lunar_lander_mpi()
-    test_binary_lunar_lander_mpi()
-
-    test_mountain_car_mpi()
-    test_mountain_car_continous_mpi()

@@ -39,7 +39,6 @@ class AntRunner(GymRunner):
             "actor_kw_args"    : actor_kw_args,
             "critic_kw_args"   : critic_kw_args,
             "lr"               : lr,
-            "bootstrap_clip"   : (-10., 10.),
             "target_kl"        : 0.015,
         }
 

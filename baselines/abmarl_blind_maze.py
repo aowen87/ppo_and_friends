@@ -46,7 +46,6 @@ class AbmarlBlindMazeRunner(EnvironmentRunner):
             "actor_kw_args"      : actor_kw_args,
             "critic_kw_args"     : critic_kw_args,
             "lr"                 : lr,
-            "bootstrap_clip"     : (-10., 10.),
             "enable_icm"         : True,
             "icm_kw_args"        : icm_kw_args,
             "entropy_weight"     : entropy_weight,

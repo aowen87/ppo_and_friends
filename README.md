@@ -17,15 +17,9 @@ Some of our friends:
 * Intrinsic Curiosity Module (ICM)
 * Multi Agent Proximal Policy Optimization (MAPPO)
 * Generalized Advantage Estimations (GAE)
-* LSTM integration into PPO algorithm
-* Gradient, reward, bootstrap, value, and observation clipping
-* KL based early ending
-* KL punishment
-* Splitting observations by proprioceptive and exteroceptive information
-* Observation, advantage, and reward normalization
-* Learning rate annealing
-* Entropy annealing
-* Intrinsic reward weight annealing
+* LSTM support
+* Clipping and normalizations
+* KL punishment and early ending
 * Vectorized environments
 * Observational augmentations
 
@@ -230,7 +224,7 @@ ppoaf --help
 To test a model that has been trained on a particular environment,
 you can issue the following command:
 ```
-ppoaf <path_to_runner_file> --num-test-runs <num_test_runs> --render
+ppoaf --test <path_to_runner_file> --num-test-runs <num_test_runs> --render
 ```
 You can optionally omit the `--render` or add the `--render-gif` flag.
 
@@ -238,7 +232,7 @@ By default, exploration is disabled during testing, but you can enable it
 with the `--test-explore` flag. Example:
 
 ```
-ppoaf <path_to_runner_file> --num-test-runs <num_test_runs> --render --test-explore
+ppoaf --test <path_to_runner_file> --num-test-runs <num_test_runs> --render --test-explore
 ```
 
 Note that enabling exploration during testing will have varied results. I've found
@@ -312,68 +306,6 @@ Some things to note:
    processor is only collecting 32 timesteps per rollout, the highest
    score any of them could ever achieve would be 32. Therefore, a reported
    score around 32 might actually signal a converged policy.
-
-# Other Features
-
-## Observational Augmentations
-
-### What are observational augmentations?
-Imagine we have a 3D environment where we
-want to learn to move a ball as fast as possible. There are two options to
-consider here; do we want the ball to move in a single direction, or should
-the ball be able to move in any direction? In other words, should direction
-matter at all in our reward? If the answer is yes, we should learn to move
-the ball in one direction only, then we can proceed as usual. Environments
-like Ant employ this kind of reward. However, if our answer is no, we have
-an interesting situation here. If we're using the standard approach for this
-case, we need to wait for the policy to experience enough directions to
-learn that direction doesn't matter. On the other hand, the policy might
-learn a simplified version of this idea early on and just choose a random
-direction and stick with it. But what if we *want* the policy to learn that
-direction doesn't matter? In this case, we really do need to wait for the
-policy to encounter enough experiences to learn this on its own (maybe we start
-the ball rolling in a random direction with every reset). If direction truly
-doesn't matter, though, do we really need to wait for those experiences
-to stack up? Well, this likely depends on the environment. In this case,
-our observations are simple enough that we can *augment* a single observation
-to obtain a batch of observations corresponding to different directions.
-We can get away with this because *the reward trajectories will be identical
-regardless of direction*. In other words, we can cheat the system, and,
-instead of waiting for the environment to crank out a bunch of directions,
-we can take a short cut by artificially generating those directions and
-their trajectories from a single observation.
-
-### How to utilize observational augmentations
-Both `run`, located in `runners/env_runner.py` and our `PPO` class have
-an `obs_augment` argument that, when enabled, will try to wrap your environment
-in `AugmentingEnvWrapper`. This wrapper expects (and checks) that your
-environment has a method named `augment_observation`, which takes a *single*
-observation and returns a batch of observations. This batch will contain the
-original observation plus a number of augmentations, and the batch size is
-expected to always be the same. The values for actions, dones, and rewards
-are all duplicated to be identical for every instance in the batch. Info is also
-duplicated, except that it might contain augmented terminal observations.
-
-**NOTE:** we don't currently prohibit the use of multiple environments per
-processor in conjunction with `aug_observation`, but it is untested and
-should be used with caution and consideration.
-
-## Soft Resets
-
-### What are soft resets?
-In short, the environment is only reset back to its starting state when it
-reaches a done state. This can be useful when you want to keep your timesteps
-per episode fairly short while allowing your agent(s) to explore the
-environment at further time states.
-
-### When to use caution
-While soft resets can be very useful, there are also situations where they
-can be detrimental. Imagine a scenario where your agent can easily fall into
-inescapable "traps" midway through exploring the environment. If soft resets
-are enabled, you might find that your rollouts are starting with the agent
-in this trap, which could negatively impact learning. On the other hand, if
-the traps are escapable, and escaping is a desired learned behavior, then
-using soft resets might actually be helpful in the long term.
 
 # Tips And Tricks
 

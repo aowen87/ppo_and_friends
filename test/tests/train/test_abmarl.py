@@ -14,6 +14,3 @@ def test_abmarl_maze_mpi():
 
     high_score_test('mpi abmarl maze',
         'abmarl_maze.py', 10, passing_scores)
-
-if __name__ == "__main__":
-    test_abmarl_maze_mpi()

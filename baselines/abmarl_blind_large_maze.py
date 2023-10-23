@@ -102,7 +102,6 @@ class AbmarlBlindLargeMazeRunner(EnvironmentRunner):
             "critic_kw_args"     : critic_kw_args,
             "icm_lr"             : 0.0005,
             "lr"                 : lr,
-            "bootstrap_clip"     : (-10., 10.),
             "enable_icm"         : True,
             "icm_kw_args"        : icm_kw_args,
             "intr_reward_weight" : intr_reward_weight,

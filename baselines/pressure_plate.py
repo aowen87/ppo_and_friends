@@ -55,7 +55,6 @@ class PressurePlateRunner(GymRunner):
             "critic_kw_args"   : critic_kw_args,
             "lr"               : lr,
             "entropy_weight"   : entropy_weight,
-            "bootstrap_clip"   : (-3, 0),
         }
 
         #
