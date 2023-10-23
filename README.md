@@ -21,7 +21,6 @@ Some of our friends:
 * Clipping and normalizations
 * KL punishment and early ending
 * Vectorized environments
-* Observational augmentations
 
 For a full list of policy options and their defaults, see 
 `ppo_and_friends/policies/agent_policy.py`.
