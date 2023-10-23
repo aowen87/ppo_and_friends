@@ -53,7 +53,6 @@ class PPO(object):
                  save_train_scores   = False,
                  pickle_class        = False,
                  soft_resets         = False,
-                 obs_augment         = False,
                  test_mode           = False,
                  verbose             = False,
                  **kw_args):
@@ -121,13 +120,6 @@ class PPO(object):
                  soft_resets          Use "soft resets" during rollouts. This
                                       can be a bool or an instance of
                                       LinearStepScheduler.
-                 obs_augment          This is a funny option that can only be
-                                      enabled with environments that have a
-                                      "observation_augment" method defined.
-                                      When enabled, this method will be used to
-                                      augment observations into batches of
-                                      observations that all require the same
-                                      treatment (a single action).
                  test_mode            Most of this class is not used for
                                       testing, but some of its attributes are.
                                       Setting this to True will enable test
@@ -158,7 +150,6 @@ class PPO(object):
             env_generator     = env_generator,
             envs_per_proc     = envs_per_proc,
             random_seed       = random_seed,
-            obs_augment       = obs_augment,
             normalize_obs     = normalize_obs,
             normalize_rewards = normalize_rewards,
             obs_clip          = obs_clip,
@@ -201,7 +192,6 @@ class PPO(object):
         self.normalize_rewards   = normalize_rewards
         self.normalize_obs       = normalize_obs
         self.normalize_values    = normalize_values
-        self.obs_augment         = obs_augment
         self.test_mode           = test_mode
         self.actor_obs_shape     = self.env.observation_space.shape
         self.policy_mapping_fn   = policy_mapping_fn
@@ -513,38 +503,6 @@ class PPO(object):
                 raw_actions[a_id] = batch_raw_actions[p_idx]
                 actions[a_id]     = batch_actions[p_idx]
                 log_probs[a_id]   = batch_log_probs[p_idx]
-
-        return raw_actions, actions, log_probs
-
-    def get_policy_actions_from_aug_obs(self, obs):
-        """
-            Given a dictionary mapping agent ids to augmented
-            batches of observations,
-            generate an dictionary of actions from our policy.
-
-            Arguments:
-                obs    A dictionary mapping agent ids to observations.
-
-            Returns:
-                A tuple of the form (raw_actions, actions, log_probs).
-                'actions' have potentially been altered for the environment,
-                but 'raw_actions' are guaranteed to be unaltered.
-        """
-        raw_actions = {} 
-        actions     = {}
-        log_probs   = {}
-
-        #TODO: update this to use policy batches.
-        for agent_id in obs:
-            policy_id = self.policy_mapping_fn(agent_id)
-
-            obs_slice = obs[agent_id][0:1]
-            raw_action, action, log_prob = \
-                self.policies[policy_id].get_training_actions(obs_slice)
-
-            raw_actions[agent_id] = raw_action
-            actions[agent_id]     = action
-            log_probs[agent_id]   = log_prob
 
         return raw_actions, actions, log_probs
 
@@ -999,12 +957,8 @@ class PPO(object):
             total_rollout_ts += env_batch_size
             episode_lengths  += 1
 
-            if self.obs_augment:
-                raw_action, action, log_prob = \
-                    self.get_policy_actions_from_aug_obs(obs)
-            else:
-                raw_action, action, log_prob = \
-                    self.get_policy_actions(obs)
+            raw_action, action, log_prob = \
+                self.get_policy_actions(obs)
 
             value = self.get_policy_values(critic_obs)
 
@@ -1035,14 +989,6 @@ class PPO(object):
             #
             where_truncated = self.verify_truncated(terminated, truncated)[0]
             have_truncated  = where_truncated.size > 0
-
-            #
-            # In the observational augment case, our action is a single action,
-            # but our return values are all batches. We need to tile the
-            # actions into batches as well.
-            #
-            if self.obs_augment:
-                self._tile_aug_results(self, action, raw_action, obs, log_prob)
 
             value = self.get_detached_dict(value)
 
