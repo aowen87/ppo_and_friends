@@ -29,7 +29,6 @@ class AbmarlReachTheTargetRunner(EnvironmentRunner):
             "actor_kw_args"      : actor_kw_args,
             "critic_kw_args"     : critic_kw_args,
             "lr"                 : lr,
-            "bootstrap_clip"     : (-10, 10),
         }
 
         def policy_mapping_fn(agent_id):

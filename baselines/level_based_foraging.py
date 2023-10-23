@@ -46,7 +46,6 @@ class LevelBasedForagingRunner(GymRunner):
             "actor_kw_args"    : actor_kw_args,
             "critic_kw_args"   : critic_kw_args,
             "lr"               : lr,
-            "bootstrap_clip"   : (0, 1),
         }
 
         #

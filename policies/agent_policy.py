@@ -32,7 +32,7 @@ class AgentPolicy():
                  action_space,
                  actor_observation_space,
                  critic_observation_space,
-                 bootstrap_clip      = (-10., 10.),
+                 bootstrap_clip      = (-np.inf, np.inf),
                  ac_network          = FeedForwardNetwork,
                  actor_kw_args       = {},
                  critic_kw_args      = {},
@@ -48,7 +48,6 @@ class AgentPolicy():
                  use_gae             = True,
                  gamma               = 0.99,
                  lambd               = 0.95,
-                 dynamic_bs_clip     = False,
                  enable_icm          = False,
                  icm_network         = ICM,
                  intr_reward_weight  = 1.0,
@@ -62,15 +61,7 @@ class AgentPolicy():
                  actor_observation_space   The actor's observation space.
                  critic_observation-space  The critic's observation space.
 
-                 bootstrap_clip       When using GAE, we bootstrap the values
-                                      and rewards when an epsiode is cut off
-                                      before completion. In these cases, we
-                                      clip the bootstrapped reward to a
-                                      specific range. Why is this? Well, our
-                                      estimated reward (from our value network)
-                                      might be way outside of the expected
-                                      range. We also allow the range min/max
-                                      to be callables from utils/schedulers.
+                 bootstrap_clip       Clip our bootstrap.
                  ac_network           The type of network to use for the actor
                                       and critic.
                  actor_kw_args        Keyword arguments for the actor network.
@@ -104,11 +95,6 @@ class AgentPolicy():
                  gamma                The gamma parameter used in calculating
                                       rewards to go.
                  lambd                The 'lambda' value for calculating GAEs.
-                 dynamic_bs_clip      If set to True, bootstrap_clip will be
-                                      used as the initial clip values, but all
-                                      values thereafter will be taken from the
-                                      global min and max rewards that have been
-                                      seen so far.
                  enable_icm           Boolean flag. Enable ICM?
                  icm_network          The network to use for ICM applications.
                  intr_reward_weight   When using ICM, this weight will be
@@ -127,7 +113,6 @@ class AgentPolicy():
         self.use_gae            = use_gae
         self.gamma              = gamma
         self.lambd              = lambd
-        self.dynamic_bs_clip    = dynamic_bs_clip
         self.using_lstm         = False
         self.dataset            = None
         self.device             = torch.device("cpu")
@@ -194,13 +179,6 @@ class AgentPolicy():
             max_bs_callable = CallableValue(bootstrap_clip[1])
 
         self.bootstrap_clip = (min_bs_callable, max_bs_callable)
-
-        if bs_clip_callable and dynamic_bs_clip:
-            msg  = "WARNING: it looks like you've enabled dynamic_bs_clip "
-            msg += "and also set the bootstrap clip to be callables. This is "
-            msg += "redundant, and the dynamic clip will override the given "
-            msg += "functions."
-            rank_print(msg)
 
         self._initialize_networks(
             ac_network     = ac_network,
@@ -789,13 +767,8 @@ class AgentPolicy():
                 A tuple containing the min and max values for the bootstrap
                 clip.
         """
-        if self.dynamic_bs_clip and ep_rewards is not None:
-            bs_min = min(ep_rewards)
-            bs_max = max(ep_rewards)
-
-        else:
-            bs_min = self.bootstrap_clip[0]()
-            bs_max = self.bootstrap_clip[1]()
+        bs_min = self.bootstrap_clip[0]()
+        bs_max = self.bootstrap_clip[1]()
 
         return (bs_min, bs_max)
 
@@ -905,7 +878,6 @@ class AgentPolicy():
             and self.use_gae            == other.use_gae
             and self.gamma              == other.gamma
             and self.lambd              == other.lambd
-            and self.dynamic_bs_clip    == other.dynamic_bs_clip
             and self.using_lstm         == other.using_lstm
             and self.action_dtype       == other.action_dtype)
 
@@ -928,7 +900,6 @@ class AgentPolicy():
         str_self += "    use gae: {}\n".format(self.use_gae)
         str_self += "    gamma: {}\n".format(self.gamma)
         str_self += "    lambd: {}\n".format(self.lambd)
-        str_self += "    dynamic bs clip: {}\n".format(self.dynamic_bs_clip)
         str_self += "    bootstrap clip: {}\n".format(self.bootstrap_clip)
         str_self += "    using lstm: {}\n".format(self.using_lstm)
         str_self += "    action dtype: {}\n".format(self.action_dtype)

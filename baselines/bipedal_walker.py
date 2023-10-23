@@ -56,7 +56,6 @@ class BipedalWalkerRunner(GymRunner):
             "actor_kw_args"    : actor_kw_args,
             "critic_kw_args"   : critic_kw_args,
             "lr"               : lr,
-            "bootstrap_clip"   : (-1., 10.),
         }
 
         policy_settings, policy_mapping_fn = get_single_policy_defaults(
@@ -65,8 +64,7 @@ class BipedalWalkerRunner(GymRunner):
 
         #
         # Thresholding the reward to a low of -1 doesn't drastically
-        # change learning, but it does help a bit. Clipping the bootstrap
-        # reward to the same range seems to help with stability.
+        # change learning, but it does help a bit.
         #
         self.run_ppo(env_generator       = env_generator,
                      policy_settings     = policy_settings,
